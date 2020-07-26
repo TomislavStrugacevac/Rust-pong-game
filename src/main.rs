@@ -169,6 +169,46 @@ impl App {
 }
 
 fn main() {
-    println!("Hello, world!");
+    let opengl = OpenGl::V3_2;
+    let mut window: GlutinWindow = WindowSettings::new("Pong", [512,342])
+        .opengl(opengl)
+        .exit_on_esc(true)
+        .build()
+        .unwrap();
+
+    let mut app = App {
+     gl: GlGraphics::new(opengl),
+     left_score: 0,
+     left_pos: 1,
+     left_vel: 0,
+     right_score: 0,
+     right_pos: 1,
+     right_vel: 0,
+     ball_x: 0,
+     ball_y: 0,
+     vel_x: 1,
+     vel_y: 1,
+	}
+
+    let mut events = Events::new(EventSettings::new());
+
+    while let Some(e) = events.next(&mut window) {
+
+     if let Some(r) = e.render_args() {
+      app.render(&r);
+	 }
+
+     if let Some(u) = e.update_args() {
+      app.render(&u);
+	 }
+
+     if let Some(b) = e.press_args() {
+      app.render(&b);
+	 }
+
+     if let Some(b) = e.release_args() {
+      app.render(&b);
+	 }
+	}
 }
  
