@@ -6,12 +6,12 @@ extern crate piston;
 use std::process;
 use piston::window::WindowSettings;
 use piston::event_loop::{EventSettings, Events};
-use piston::input::{Button, Key, PressEvent, ReleaseEvent, RenderArgs, RenderEvent, UpdateArg, UpdateEvent};
+use piston::input::{Button, Key, PressEvent, ReleaseEvent, RenderArgs, RenderEvent, UpdateArgs, UpdateEvent};
 use glutin_window::GlutinWindow;
 use opengl_graphics::{GlGraphics, OpenGL};
 
 pub struct App {
-    gl: GLGraphics,
+    gl: GlGraphics,
     left_score: i32,
     left_pos: i32,
     left_vel: i32,
@@ -27,11 +27,11 @@ pub struct App {
 impl App {
 
 // rednder paddles and the ball
-    fb render(&mut self, args: &RenderArgs) {
+    fn render(&mut self, args: &RenderArgs) {
      use graphics::*;
 
-     const BACKGROUND: [f32; 4] = [0.0, 0.5, 0.5, 1.0];
-     const FOREGROUND: [f32; 4] = [0.0, 0.0, 1.0, 1.0];
+     const BACKGROUND: [f32; 4] = [0.0, 0.0, 0.0, 1.0];
+     const FOREGROUND: [f32; 4] = [0.0, 1.0, 0.0, 1.0];
 
      let left = rectangle::square(0.0, 0.0, 50.0);
      let left_pos = self.left_pos as f64;
@@ -54,7 +54,7 @@ impl App {
 
         rectangle( FOREGROUND,
                     right,
-                    c.transform.trans(args.width as f64 - 10.0, right_pos,
+                    c.transform.trans(args.width as f64 - 10.0, right_pos),
                     gl);
 
         rectangle( FOREGROUND, 
@@ -62,18 +62,19 @@ impl App {
                     c.transform.trans(ball_x, ball_y),
                     gl);
 
-	})
+	    })
+    }
 
     // game logic
     fn update (&mut self, _args: &UpdateArgs) {
 
         // make sure that left paddle doesn't go off screen
-        if ( self.left_vel === 1 && self.left_pos < 291 ) || ( self.left_vel === -1 && self.left_pos >= 1) {
+        if ( self.left_vel == 1 && self.left_pos < 291 ) || ( self.left_vel == -1 && self.left_pos >= 1) {
             self.left_pos += self.left_vel;  
 		}
 
         // make sure that right paddle doesn't go off screen
-        if ( self.right_vel === 1 && self.right_pos < 291 ) || ( self.right_vel === -1 && self.right_pos >= 1) {
+        if ( self.right_vel == 1 && self.right_pos < 291 ) || ( self.right_vel == -1 && self.right_pos >= 1) {
             self.right_pos += self.right_vel;
         }
 
@@ -107,7 +108,7 @@ impl App {
                     process::exit(0);
 				}
                 self.ball_x = 256;
-                self:ball_y = 171;
+                self.ball_y = 171;
 			}
         }
 
@@ -121,7 +122,7 @@ impl App {
     // handle player controls
 
     fn press ( &mut self, args: &Button ) {
-     if let &Button::Keyboard(Key) = args {
+     if let &Button::Keyboard(key) = args {
         match key {
             // right paddle controls
             Key::Up => {
@@ -144,7 +145,7 @@ impl App {
 	}
 
     fn release  ( &mut self, args: &Button ) {
-     if let &Button::Keyboard(Key) = args {
+     if let &Button::Keyboard(key) = args {
       match key {
        // right paddle controls
             Key::Up => {
@@ -165,50 +166,46 @@ impl App {
 	  }
 	 }
 	}
-
 }
-
 fn main() {
-    let opengl = OpenGl::V3_2;
-    let mut window: GlutinWindow = WindowSettings::new("Pong", [512,342])
+    let opengl = OpenGL::V3_2;
+    let mut window: GlutinWindow = WindowSettings::new("Pong", [512, 342])
         .opengl(opengl)
         .exit_on_esc(true)
         .build()
         .unwrap();
 
     let mut app = App {
-     gl: GlGraphics::new(opengl),
-     left_score: 0,
-     left_pos: 1,
-     left_vel: 0,
-     right_score: 0,
-     right_pos: 1,
-     right_vel: 0,
-     ball_x: 0,
-     ball_y: 0,
-     vel_x: 1,
-     vel_y: 1,
-	}
+        gl: GlGraphics::new(opengl),
+        left_score: 0,
+        left_pos: 1,
+        left_vel: 0,
+        right_score: 0,
+        right_pos: 1,
+        right_vel: 0,
+        ball_x: 0,
+        ball_y: 0,
+        vel_x: 1,
+        vel_y: 1,
+    };
 
     let mut events = Events::new(EventSettings::new());
-
     while let Some(e) = events.next(&mut window) {
+        if let Some(r) = e.render_args() {
+            app.render(&r);
+        }
 
-     if let Some(r) = e.render_args() {
-      app.render(&r);
-	 }
+        if let Some(u) = e.update_args() {
+            app.update(&u);
+        }
 
-     if let Some(u) = e.update_args() {
-      app.render(&u);
-	 }
+        if let Some(b) = e.press_args() {
+            app.press(&b);
+        }
 
-     if let Some(b) = e.press_args() {
-      app.render(&b);
-	 }
-
-     if let Some(b) = e.release_args() {
-      app.render(&b);
-	 }
-	}
+        if let Some(b) = e.release_args() {
+            app.release(&b);
+        }
+    }
 }
  
