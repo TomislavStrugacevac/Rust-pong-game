@@ -119,6 +119,7 @@ impl App {
     }
 
     // handle player controls
+
     fn press ( &mut self, args: &Button ) {
      if let &Button::Keyboard(Key) = args {
         match key {
@@ -139,6 +140,29 @@ impl App {
 			}
             _ => {}     // for any other key ignore it
 		}
+	 }
+	}
+
+    fn release  ( &mut self, args: &Button ) {
+     if let &Button::Keyboard(Key) = args {
+      match key {
+       // right paddle controls
+            Key::Up => {
+                self.right_vel = 0;     
+			}
+            Key::Down => {
+                self.right_vel = 0;     
+			}
+
+            // left paddle controls
+            Key::W => {
+                self.left_vel = 0;     
+			}
+            Key::S => {
+                self.left_vel = 0;     
+			}
+            _ => {}     // for any other key ignore it
+	  }
 	 }
 	}
 
